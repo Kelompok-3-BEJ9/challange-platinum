@@ -12,7 +12,7 @@
 
  1. Clone Project
  ```
- git clone https://github.com/komangsurya26/Komang_Shop.git
+ git clone https://github.com/Kelompok-3-BEJ9/challange-platinum.git
  ```
  2. Install Dependency
  ```
