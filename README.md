@@ -1,4 +1,4 @@
-## Technology Which I Used
+## Technology Which Used
 
 * [![NodeJS][Node.js]][Node-url]
 * [![Express][Express.js]][Express-url]
