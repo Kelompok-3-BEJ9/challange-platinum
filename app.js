@@ -10,8 +10,9 @@ app.use(express.json());
 app.use(morgan('dev'));
 
 app.get("/", (req, res) => {
-  return res.json("Ready");
+  return res.status(200).json("Ready");
 });
+
 
 app.use(userRouter);
 app.use(itemRouter);
