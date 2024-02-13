@@ -17,6 +17,7 @@ async function createItem(req, res, next) {
       return res.status(400).json(response);
     }
 
+    //upload image dengan cloudinary
     const uploadImage = await uploadCloudinary(req.file.path)
 
     if (!item_name || !item_price ) {
