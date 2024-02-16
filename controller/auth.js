@@ -3,7 +3,6 @@ const fs = require("fs");
 const bcrypt = require("bcrypt");
 
 const { SuccessResponse, ErrorResponse } = require("../utils/respons");
-const { generateJwtToken } = require("../modules/jwt");
 const { sendEmail } = require("../modules/sendinblue");
 const { randomToken } = require("../utils/uuid");
 const { formatEmail } = require("../utils/emailValidation");
@@ -103,12 +102,8 @@ async function login(req, res, next) {
     // Cek Password
     const cekPassword = await bcrypt.compare(password, user.password);
     if (cekPassword) {
-      //create Token Jwt
-      const token = generateJwtToken(user);
 
-      const response = new SuccessResponse("Login Succcess! 👏", 200, {
-        token: token,
-      });
+      const response = new SuccessResponse("Login Succcess! 👏", 200,)
 
       return res.status(200).json(response);
     } else {

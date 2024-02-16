@@ -1,23 +1,15 @@
 const { SuccessResponse, ErrorResponse } = require("../utils/respons");
 const { Items } = require("../models");
-const { uploadCloudinary } = require("../modules/cloudinary");
 
 async function createItem(req, res, next) {
   try {
     const {
       item_name,
       item_price,
+      item_image,
       item_description,
       item_stock,
     } = req.body;
-
-    // Pemeriksaan apakah req.file tidak undefined
-    if (!req.file) {
-      const response = new ErrorResponse("Please Upload Item Image", 400);
-      return res.status(400).json(response);
-    }
-
-    const uploadImage = await uploadCloudinary(req.file.path)
 
     if (!item_name || !item_price ) {
       const response = new ErrorResponse("Input Name and Price 🙏", 400);
@@ -27,7 +19,7 @@ async function createItem(req, res, next) {
     const createdItems = await Items.create({
       item_name,
       item_price,
-      item_image: uploadImage,
+      item_image,
       item_stock,
       item_description,
     });

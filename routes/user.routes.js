@@ -1,6 +1,5 @@
 const { register, login, verifyEmail } = require("../controller/auth");
 const { getAll, update, deleted, updateDetail, getOne } = require("../controller/user");
-const { verifyAccesToken } = require("../middleware/verifyAccess");
 
 const router = require("express").Router();
 

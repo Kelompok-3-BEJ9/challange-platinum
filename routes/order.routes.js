@@ -3,7 +3,6 @@ const {
   orderSuccess,
   getOrderDetails,
 } = require("../controller/order");
-const { verifyAccesToken } = require("../middleware/verifyAccess");
 
 const router = require("express").Router();
 
