@@ -16,6 +16,11 @@ module.exports = (sequelize, DataTypes) => {
         sourceKey: "id", // Ini mengacu ke kolom id di table Users
         as: "user_detail"
       });
+      Users.belongsToMany(models.Rooms,{
+        through: models.Conversations,
+        foreignKey: "user_id",
+        as: "rooms"
+      })
     }
   }
   Users.init(
