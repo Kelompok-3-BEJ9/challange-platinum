@@ -29,7 +29,6 @@ async function sendEmail (to, details) {
   apiKey.apiKey = SENDINBLUE_APIKEY;
 
   const resp = await client.sendTransacEmail(smtpEmail);
-  console.log(resp);
 };
 
 module.exports = { sendEmail };

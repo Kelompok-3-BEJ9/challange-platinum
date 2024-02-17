@@ -146,4 +146,5 @@ async function verifyEmail(req, res, next) {
   }
 }
 
+
 module.exports = { register, login, verifyEmail };

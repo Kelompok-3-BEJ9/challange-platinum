@@ -6,19 +6,13 @@ async function createOrder(req, res, next) {
   const transaction = await sequelize.transaction();
 
   try {
-    const user_id = +req.params.user_id;
+    const user_id = req.user.id;
     const { item_id, quantity } = req.body;
 
     // Check if quantity is valid
     if (!quantity || quantity <= 0) {
       const response = new ErrorResponse("Please input a valid quantity!", 400);
       return res.status(400).json(response);
-    }
-
-    // Find User
-    const findUser = await Users.findByPk(user_id, { transaction });
-    if (!findUser) {
-      return res.status(404).json(new ErrorResponse("User Not Found!", 404));
     }
 
     // Find Item

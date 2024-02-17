@@ -3,13 +3,13 @@ const {
   orderSuccess,
   getOrderDetails,
 } = require("../controller/order");
-const { verifyAccesToken } = require("../middleware/verifyAccess");
+const { authenticate, authorization } = require("../middleware/verifyAccess");
 
 const router = require("express").Router();
 
 router
-  .post("/order/v1/:user_id", createOrder)
-  .put("/update/order/v1", orderSuccess)
-  .get("/get/order/v1", getOrderDetails);
+  .post("/order/v1/:user_id", authenticate, createOrder)
+  .put("/update/order/v1", authenticate, authorization, orderSuccess)
+  .get("/get/order/v1", authenticate, getOrderDetails);
 
 module.exports = router;

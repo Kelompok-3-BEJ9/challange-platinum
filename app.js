@@ -4,6 +4,8 @@ const swagger = require("./docs/swager");
 const userRouter = require("./routes/user.routes");
 const itemRouter = require("./routes/item.routes");
 const orderRouter = require("./routes/order.routes");
+const { chatRouterRestAPI } = require("./routes/chats.routes");
+const passport = require("passport");
 
 const app = express();
 
@@ -17,6 +19,8 @@ app.get("/", (req, res) => {
   return res.status(200).json("Ready");
 });
 
+app.use(passport.initialize()); // ini passport
+app.use(chatRouterRestAPI); //chat rest api
 app.use(userRouter);
 app.use(itemRouter);
 app.use(orderRouter);

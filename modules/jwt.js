@@ -5,9 +5,10 @@ function generateJwtToken(user) {
   const payload = {
     id: user.id,
     email: user.email,
+    is_admin: user.is_admin
   };
 
-  const expiredIn = 60 * 60 * 1;
+  const expiredIn = 30 * 24 * 60 * 60;
   const token = jwt.sign(payload, JWT_SECRET, { expiresIn: expiredIn });
 
   return token;

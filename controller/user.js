@@ -5,10 +5,12 @@ const bcrypt = require("bcrypt");
 async function getAll(req, res, next) {
   try {
     const data = await Users.findAll({
+      attributes: ["id", "first_name", "last_name", "email", "phone"],
       include: [
         {
           model: User_Details,
           as: "user_detail",
+          attributes: ["address", "city", "postal_code", "country_code"],
         },
       ],
     });
@@ -25,12 +27,19 @@ async function getOne(req, res, next) {
     //Include User Detail To User
     const user = await Users.findOne({
       where: { id },
-      include: [{ model: User_Details, as: "user_detail" }],
+      attributes: ["id", "first_name", "last_name", "email", "phone"],
+      include: [
+        {
+          model: User_Details,
+          as: "user_detail",
+          attributes: ["address", "city", "postal_code", "country_code"],
+        },
+      ],
     });
     if (!user) {
       res.status(404).json(new ErrorResponse("User Not Found",404))
     }
-    res.status(200).json(new SuccessResponse("Get User Success",200,user))
+    res.status(200).json(new SuccessResponse("Get User Success",200, user))
   } catch (error) {
     next(error)
   }
@@ -39,7 +48,7 @@ async function getOne(req, res, next) {
 
 async function update(req, res, next) {
   try {
-    const id = +req.params.id;
+    const id = req.user.id;
     const {
       first_name,
       last_name,
@@ -75,7 +84,7 @@ async function update(req, res, next) {
 
 async function updateDetail(req, res, next) {
   try {
-    const user_id = +req.params.user_id;
+    const user_id = req.user.id;
 
     const user = await User_Details.findOne({ where: { user_id } });
 
