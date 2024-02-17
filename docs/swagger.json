@@ -113,21 +113,17 @@
         ],
         "summary": "Finds Order by Id_Order",
         "description": "Finds Order by Id_Order",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "order_id": {
-                    "type": "string",
-                    "format": "uuid"
-                  }
-                }
-              }
+        "parameters": [
+          {
+            "name": "order_id",
+            "in": "query",
+            "description": "input order_id to find order",
+            "required": true,
+            "schema": {
+              "type": "string"
             }
           }
-        },
+        ],
         "responses": {
           "200": {
             "description": "get order successful"

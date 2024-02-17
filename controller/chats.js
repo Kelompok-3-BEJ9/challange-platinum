@@ -7,7 +7,8 @@ const { ErrorResponse, SuccessResponse } = require("../utils/respons");
 const chooseRoom = (io, socket) => async (message) => {
   const user_id = getUserFromToken(socket.handshake.headers.authorization);
 
-  const { to_user_id } = message;
+  const { to_user_id } = socket.handshake.query;
+  
   let room = await sequelize.query(
     `select c.room_id from "Conversations" c 
         where c.user_id = :myuserid or c.user_id = :otheruserid
@@ -37,7 +38,8 @@ const chooseRoom = (io, socket) => async (message) => {
 };
 
 const sendMessage = (io, socket) => async (message) => {
-  const { room_id, text } = message;
+  const { room_id } = socket.handshake.query;
+  const text = message;
   try {
     const user_id = getUserFromToken(socket.handshake.headers.authorization);
     const conversations = await Conversations.findOne({
@@ -66,7 +68,7 @@ const sendMessage = (io, socket) => async (message) => {
     socket.join(room_id);
     io.to(room_id).emit(
       "receiveMessage",
-      new SuccessResponse("Success", 200, data)
+      data.message,
     );
   } catch (error) {
     socket.join(room_id);

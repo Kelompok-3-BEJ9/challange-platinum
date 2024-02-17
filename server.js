@@ -9,7 +9,19 @@ const server = http.createServer(app);
 const io = new Server(server)
 
 io.on('connection', (socket) => {
-  chatsRouter(io, socket);
+  chatsRouter(io, socket)
+  
+  // const {room} = socket.handshake.query
+  // if (socket.adapter.rooms.get(room)?.size < 2 || !socket.adapter.rooms.get(room)) {
+  //   socket.join(room)
+  // }else {
+  //   socket.emit('receiveMessage', 'Room is full')
+  //   socket.disconnect()
+  // }
+
+  // socket.on('sendMessage', (message) => {
+  //   io.to(room).emit('receiveMessage', message)
+  // })
 })
 
 async function startServer() {

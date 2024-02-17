@@ -106,7 +106,7 @@ async function orderSuccess(req, res, next) {
 
 async function getOrderDetails(req, res, next) {
   try {
-    const { order_id } = req.body;
+    const { order_id } = req.query;
 
     // Dapatkan detail order beserta produknya
     const order = await Order.findByPk(order_id, {
