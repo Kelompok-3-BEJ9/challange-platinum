@@ -1,14 +1,19 @@
 const { getUserFromToken } = require("../middleware/verifyAccess");
 const { Op } = require("sequelize");
 const { sequelize } = require("../models");
-const { Rooms, Conversations, Messages } = require("../models");
+const { Rooms, Conversations, Messages, Users } = require("../models");
 const { ErrorResponse, SuccessResponse } = require("../utils/respons");
 
 const chooseRoom = (io, socket) => async (message) => {
   const user_id = getUserFromToken(socket.handshake.headers.authorization);
-
-  const { to_user_id } = socket.handshake.query;
   
+  const admin = await Users.findOne({
+    where: {
+      is_admin: true,
+    },
+  });
+  const to_user_id  = socket.handshake.query.to_user_id || admin.id;
+
   let room = await sequelize.query(
     `select c.room_id from "Conversations" c 
         where c.user_id = :myuserid or c.user_id = :otheruserid
@@ -42,37 +47,40 @@ const sendMessage = (io, socket) => async (message) => {
   const text = message;
   try {
     const user_id = getUserFromToken(socket.handshake.headers.authorization);
-    const conversations = await Conversations.findOne({
+
+    // Mencari percakapan berdasarkan room_id dan user_id
+    const conversation = await Conversations.findOne({
       where: {
         room_id,
-        user_id,
       },
       attributes: ["id"],
     });
-    if (!conversations) {
+
+    // Jika percakapan tidak ditemukan, kirimkan respons bahwa ruangan tidak ditemukan
+    if (!conversation) {
       throw new ErrorResponse("Room Not Found", 404);
     }
 
+    // Menyimpan pesan ke dalam database
     await Messages.create({
-      conversation_id: conversations.id,
+      conversation_id: conversation.id,
       user_id,
       message: text,
     });
 
+    // Mengirim pesan ke semua pengguna di ruang percakapan
     const data = {
       user_id,
       room_id,
       message: text,
     };
+    socket.join(room_id);
+    io.to(room_id).emit("receiveMessage", data.message);
 
-    socket.join(room_id);
-    io.to(room_id).emit(
-      "receiveMessage",
-      data.message,
-    );
   } catch (error) {
+    // Jika terjadi kesalahan, kirimkan pesan error kepada pengguna
     socket.join(room_id);
-    io.to(socket.id).emit("receiveMessage", error);
+    io.to(room_id).emit("receiveMessage", error);
   }
 };
 
