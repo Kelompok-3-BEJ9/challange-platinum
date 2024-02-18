@@ -53,7 +53,7 @@ describe("Router Test", () => {
           email: "ksuryasedana@gmail.com",
           password: "123",
           phone: "0923892390",
-          isAdmin: true, //for admin only
+          is_admin: true, //for admin only
           address: "bali",
           city: "badung",
           postal_code: "1234",

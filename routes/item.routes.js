@@ -5,7 +5,7 @@ const { authenticate, authorization } = require("../middleware/verifyAccess");
 const router = require("express").Router();
 
 router
-  .post("/create/item/v1", upload.single("item_image"), createItem)
+  .post("/create/item/v1", authenticate, authorization,upload.single("item_image"), createItem)
   .put("/update/item/v1/:id", authenticate, authorization, updateItem)
   .get("/item/v1/:id", getItem)
   .get("/item/v1", getAllItem)
