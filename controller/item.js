@@ -1,26 +1,32 @@
 const { SuccessResponse, ErrorResponse } = require("../utils/respons");
 const { Items } = require("../models");
+const path = require('path');
 const { uploadCloudinary } = require("../modules/cloudinary");
 
 async function createItem(req, res, next) {
   try {
-    const {
-      item_name,
-      item_price,
-      item_description,
-      item_stock,
-    } = req.body;
+    const { item_name, item_price, item_description, item_stock } = req.body;
 
     // Pemeriksaan apakah req.file tidak undefined
     if (!req.file) {
       const response = new ErrorResponse("Please Upload Item Image", 400);
       return res.status(400).json(response);
     }
+    // pemeriksaan apakah file gambar
+    const allowedImageTypes = [".jpg", ".jpeg", ".png"]; // Jenis file gambar yang diperbolehkan
 
+    // Mengambil ekstensi file
+    const extname = path.extname(req.file.originalname).toLowerCase(); 
+
+    // Memeriksa apakah ekstensi file sesuai
+    if (allowedImageTypes.includes(extname) === false) {
+      const response = new ErrorResponse("Please Upload an Image File", 400);
+      return res.status(400).json(response);
+    }
     //upload image dengan cloudinary
-    const uploadImage = await uploadCloudinary(req.file.path)
+    const uploadImage = await uploadCloudinary(req.file.path);
 
-    if (!item_name || !item_price ) {
+    if (!item_name || !item_price) {
       const response = new ErrorResponse("Input Name and Price 🙏", 400);
       return res.status(400).json(response);
     }
@@ -37,7 +43,7 @@ async function createItem(req, res, next) {
       201,
       createdItems
     );
-    return res.status(201).json(response)
+    return res.status(201).json(response);
   } catch (error) {
     next(error);
   }
