@@ -10,6 +10,7 @@ const io = new Server(server)
 
 io.on('connection', (socket) => {
   chatsRouter(io, socket)
+
 })
 
 async function startServer() {

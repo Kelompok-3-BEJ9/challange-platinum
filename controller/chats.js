@@ -2,10 +2,11 @@ const { getUserFromToken } = require("../middleware/verifyAccess");
 const { Op } = require("sequelize");
 const { sequelize } = require("../models");
 const { Rooms, Conversations, Messages, Users } = require("../models");
-const { ErrorResponse, SuccessResponse } = require("../utils/respons");
+const { SuccessResponse } = require("../utils/respons");
 
-const chooseRoom = (io, socket) => async (message) => {
-  const user_id = getUserFromToken(socket.handshake.headers.authorization);
+const sendMessage = (io, socket) => async (message) => {
+  const user = getUserFromToken(socket.handshake.headers.authorization);
+  const text = message;
   
   const admin = await Users.findOne({
     where: {
@@ -16,11 +17,11 @@ const chooseRoom = (io, socket) => async (message) => {
 
   let room = await sequelize.query(
     `select c.room_id from "Conversations" c 
-        where c.user_id = :myuserid or c.user_id = :otheruserid
+        where c.user_id = :myuserid or c.user_id = :otheruser
         group by c.room_id 
         having count(c.room_id) = 2 `,
     {
-      replacements: { myuserid: user_id, otheruserid: to_user_id },
+      replacements: { myuserid: user.id, otheruser: to_user_id },
       type: sequelize.QueryTypes.SELECT,
     }
   );
@@ -31,58 +32,36 @@ const chooseRoom = (io, socket) => async (message) => {
 
     await Conversations.create({
       room_id: newRoom.id,
-      user_id: user_id,
+      user_id: user.id,
     });
     await Conversations.create({
       room_id: newRoom.id,
       user_id: to_user_id,
     });
   }
+
+  const conversation = await Conversations.findOne({
+    where: {
+      room_id: room[0].room_id,
+      user_id: user.id,
+    },
+    attributes: ["id"],
+  })
+
+  await Messages.create({
+    conversation_id: conversation.id,
+    user_id: user.id,
+    message: text,
+  });
+
   socket.join(room[0].room_id);
-  io.to(room[0].room_id).emit("joinRoom", room[0].room_id);
+  io.to(room[0].room_id).emit("receiveMessage", text);
+
+  socket.on('disconnect', async () => {
+  io.to(room[0].room_id).emit("leftRoom", `${user.name} left`);
+  });
 };
 
-const sendMessage = (io, socket) => async (message) => {
-  const { room_id } = socket.handshake.query;
-  const text = message;
-  try {
-    const user_id = getUserFromToken(socket.handshake.headers.authorization);
-
-    // Mencari percakapan berdasarkan room_id dan user_id
-    const conversation = await Conversations.findOne({
-      where: {
-        room_id,
-      },
-      attributes: ["id"],
-    });
-
-    // Jika percakapan tidak ditemukan, kirimkan respons bahwa ruangan tidak ditemukan
-    if (!conversation) {
-      throw new ErrorResponse("Room Not Found", 404);
-    }
-
-    // Menyimpan pesan ke dalam database
-    await Messages.create({
-      conversation_id: conversation.id,
-      user_id,
-      message: text,
-    });
-
-    // Mengirim pesan ke semua pengguna di ruang percakapan
-    const data = {
-      user_id,
-      room_id,
-      message: text,
-    };
-    socket.join(room_id);
-    io.to(room_id).emit("receiveMessage", data.message);
-
-  } catch (error) {
-    // Jika terjadi kesalahan, kirimkan pesan error kepada pengguna
-    socket.join(room_id);
-    io.to(room_id).emit("receiveMessage", error);
-  }
-};
 
 const showMessage = async (req, res, next) => {
   try {
@@ -113,4 +92,4 @@ const showMessage = async (req, res, next) => {
   }
 };
 
-module.exports = { chooseRoom, sendMessage, showMessage };
+module.exports = { sendMessage, showMessage };

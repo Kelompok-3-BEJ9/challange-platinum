@@ -25,10 +25,10 @@ const getUserFromToken = (token) => {
     if (splitToken.length === 2 ) {
       token = splitToken[1];
       const decoded = jwt.verify(token, JWT_SECRET);
-      return decoded.id;
+      return decoded;
     }
   } catch (error) {
-    throw new Error('Invalid token');
+    return null
   }
 };
 

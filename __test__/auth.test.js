@@ -1,7 +1,6 @@
 const request = require("supertest");
 const app = require('../app')
 const { Users } = require("../models");
-const path = require('path');
 
 
 describe("Router Test", () => {

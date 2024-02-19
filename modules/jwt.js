@@ -5,6 +5,7 @@ const JWT_SECRET = process.env.JWT_SECRET
 function generateJwtToken(user) {
   const payload = {
     id: user.id,
+    name: user.first_name,
     email: user.email,
     is_admin: user.is_admin
   };
