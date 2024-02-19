@@ -9,6 +9,7 @@
     "test-item": "jest item.test.js",
     "swagger": "node swagger.js",
     "db": "npx sequelize-cli db:create",
+    "drop": "npx sequelize-cli db:drop",
     "migrate": "npx sequelize-cli db:migrate"
   },
   "keywords": [],
