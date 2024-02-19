@@ -1,7 +1,8 @@
+require("dotenv").config();
 const passport = require("../modules/passport");
 const { ErrorResponse } = require("../utils/respons");
 const jwt = require("jsonwebtoken");
-const JWT_SECRET = process.env.JWT_SECRET || "INI RAHASIA";
+const JWT_SECRET = process.env.JWT_SECRET;
 
 const authenticate = passport.authenticate("jwt", { session: false });
 

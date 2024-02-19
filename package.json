@@ -5,8 +5,11 @@
   "main": "index.js",
   "scripts": {
     "start": "nodemon server",
-    "test": "npx jest",
-    "swagger": "node swagger.js"
+    "test-auth": "jest auth.test.js",
+    "test-item": "jest item.test.js",
+    "swagger": "node swagger.js",
+    "db": "npx sequelize-cli db:create",
+    "migrate": "npx sequelize-cli db:migrate"
   },
   "keywords": [],
   "author": "",

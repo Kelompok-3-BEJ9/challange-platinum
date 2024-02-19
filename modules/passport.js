@@ -1,6 +1,7 @@
+require("dotenv").config();
 const passport = require("passport");
 const { Strategy: JWTStrategy, ExtractJwt } = require("passport-jwt");
-const JWT_SECRET = process.env.JWT_SECRET || "INI RAHASIA";
+const JWT_SECRET = process.env.JWT_SECRET;
 
 
 //JWT Auth
