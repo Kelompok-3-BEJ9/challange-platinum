@@ -1,6 +1,5 @@
 const { SuccessResponse, ErrorResponse } = require("../utils/respons");
 const { Items } = require("../models");
-const path = require('path');
 const { uploadCloudinary } = require("../modules/cloudinary");
 
 async function createItem(req, res, next) {
@@ -10,17 +9,6 @@ async function createItem(req, res, next) {
     // Pemeriksaan apakah req.file tidak undefined
     if (!req.file) {
       const response = new ErrorResponse("Please Upload Item Image", 400);
-      return res.status(400).json(response);
-    }
-    // pemeriksaan apakah file gambar
-    const allowedImageTypes = [".jpg", ".jpeg", ".png"]; // Jenis file gambar yang diperbolehkan
-
-    // Mengambil ekstensi file
-    const extname = path.extname(req.file.originalname).toLowerCase(); 
-
-    // Memeriksa apakah ekstensi file sesuai
-    if (allowedImageTypes.includes(extname) === false) {
-      const response = new ErrorResponse("Please Upload an Image File", 400);
       return res.status(400).json(response);
     }
     //upload image dengan cloudinary

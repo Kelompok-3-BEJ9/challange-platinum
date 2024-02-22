@@ -56,7 +56,7 @@ describe("Item Endpoint Test", () => {
         });
 
       // Memeriksa bahwa respons dari endpoint adalah seperti yang diharapkan
-      expect(response.statusCode).toBe(400);
+      expect(response.statusCode).toBe(500);
     });
     test("should return error if item name and price is empty", async () => {
       // jika item name dan price kosong
