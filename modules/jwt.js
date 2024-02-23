@@ -10,8 +10,7 @@ function generateJwtToken(user) {
     is_admin: user.is_admin
   };
 
-  const expiredIn = 30 * 24 * 60 * 60;
-  const token = jwt.sign(payload, JWT_SECRET, { expiresIn: expiredIn });
+  const token = jwt.sign(payload, JWT_SECRET, { expiresIn: "1d" });
 
   return token;
 }
