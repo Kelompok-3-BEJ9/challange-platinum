@@ -14,12 +14,23 @@ async function uploadCloudinary(filePath) {
   let result;
   try {
     result = await cloudinary.uploader.upload(filePath, {
-      use_filename: true,
+      use_fileName: true,
     });
-    fs.unlinkSync(filePath)
+    fs.unlink(filePath, (err) => {
+      if (err) {
+        console.log(err);
+      }
+      console.log("File deleted successfully");
+    })
     return result.url;
   } catch (err) {
-    fs.unlinkSync(filePath)
+    fs.unlink(filePath, (err) => {
+      if (err) {
+        console.log(err);
+      }
+      console.log("File deleted successfully");
+    })
+    console.log(err);
     return null;
   }
 }
