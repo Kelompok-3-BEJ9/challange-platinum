@@ -2,7 +2,6 @@ const request = require("supertest");
 const app = require("../app");
 const { sequelize, Items, Order, Order_items } = require("../models");
 const { generateJwtToken } = require("../modules/jwt");
-const { update } = require("../controller/user");
 
 //Mocking user
 const mockUser = {
