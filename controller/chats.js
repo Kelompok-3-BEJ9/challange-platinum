@@ -25,7 +25,7 @@ const sendMessage = (io, socket) => async (message) => {
       type: sequelize.QueryTypes.SELECT,
     }
   );
-  if (room.length === 0) {
+  if (room.length === 0) {clearImmediate
     const newRoom = await Rooms.create();
 
     room.push(newRoom);
