@@ -4,7 +4,7 @@ const bcrypt = require("bcrypt");
 
 const { SuccessResponse, ErrorResponse } = require("../utils/respons");
 const { generateJwtToken } = require("../modules/jwt");
-const { sendEmail } = require("../modules/sendinblue");
+const { sendEmail } = require("../modules/nodemailer");
 const { randomToken } = require("../utils/uuid");
 const { formatEmail } = require("../utils/emailValidation");
 
@@ -68,10 +68,7 @@ async function register(req, res, next) {
     );
 
     //send email
-    await sendEmail(email, {
-      subject: "Verification Link ✔︎",
-      htmlContent: htmlContent,
-    });
+    await sendEmail(email, htmlContent);
 
     return res
       .status(200)
