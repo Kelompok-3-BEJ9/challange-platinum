@@ -59,7 +59,7 @@ async function register(req, res, next) {
     });
 
     //link verification
-    const verificationLink = `http://localhost:1990/verify/v1?token=${user.token_verify}`;
+    const verificationLink = `${process.env.URL_SERVER}/verify/v1?token=${user.token_verify}`;
 
     //view verifikasi to email
     const htmlContent = viewVerify.replace(
