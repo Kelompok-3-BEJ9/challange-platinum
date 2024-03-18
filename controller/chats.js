@@ -13,59 +13,91 @@ const sendMessage = (io, socket) => async (message) => {
       is_admin: true,
     },
   });
-  const to_user_id  = socket.handshake.query.to_user_id || admin.id;
+  const to_user_id = socket.handshake.query.to_user_id || admin.id;
+
+  // Periksa to_user_id 
+  const recipient = await Users.findOne({
+    where: {
+      id: to_user_id,
+    },
+  });
+
+  if (!recipient) {
+    socket.emit("errorMessage", "User not found");
+    return;
+  }
 
   let room = await sequelize.query(
-    `select c.room_id from "Conversations" c 
-        where c.user_id = :myuserid or c.user_id = :otheruser
-        group by c.room_id 
-        having count(c.room_id) = 2 `,
+    `SELECT c.room_id FROM "Conversations" c 
+        WHERE c.user_id = :myuserid OR c.user_id = :otheruser
+        GROUP BY c.room_id 
+        HAVING COUNT(c.room_id) = 2 `,
     {
       replacements: { myuserid: user.id, otheruser: to_user_id },
       type: sequelize.QueryTypes.SELECT,
     }
   );
-  if (room.length === 0) {
+
+  let roomId = room.length > 0 ? room[0].room_id : null;
+
+  if (!roomId) {
     const newRoom = await Rooms.create();
 
-    room.push(newRoom);
+    roomId = newRoom.id;
 
-    await Conversations.create({
-      room_id: newRoom.id,
-      user_id: user.id,
+    await Conversations.bulkCreate([
+      { room_id: newRoom.id, user_id: user.id },
+      { room_id: newRoom.id, user_id: to_user_id }
+    ]);
+
+    // Percakapan Baru 
+    const welcomeMessage = `Welcome to the chat, ${user.name}!`;
+    const newConversation = await Conversations.findOne({
+      where: {
+        room_id: roomId,
+        user_id: user.id, // user penerima pesan selamat datang
+      },
+      attributes: ["id"],
     });
-    await Conversations.create({
-      room_id: newRoom.id,
-      user_id: to_user_id,
-    });
+
+    if (newConversation) {
+      await Messages.create({
+        conversation_id: newConversation.id,
+        user_id: admin.id, // Kirim dari admin
+        message: welcomeMessage,
+      });
+
+      socket.join(roomId);
+      io.to(roomId).emit("receiveMessage", welcomeMessage);
+    }
   }
 
   const conversation = await Conversations.findOne({
     where: {
-      room_id: room[0].room_id,
+      room_id: roomId,
       user_id: user.id,
     },
     attributes: ["id"],
-  })
-
-  await Messages.create({
-    conversation_id: conversation.id,
-    user_id: user.id,
-    message: text,
   });
 
-  socket.join(room[0].room_id);
-  io.to(room[0].room_id).emit("receiveMessage", text);
+  if (conversation) {
+    await Messages.create({
+      conversation_id: conversation.id,
+      user_id: user.id,
+      message: text,
+    });
 
-  socket.on('disconnect', async () => {
-  io.to(room[0].room_id).emit("leftRoom", `${user.name} left`);
-  });
+    socket.join(roomId);
+    io.to(roomId).emit("receiveMessage", text);
+
+    socket.on('disconnect', async () => {
+      io.to(roomId).emit("leftRoom", `${user.name} left`);
+    });
+  }
 };
-
 
 const showMessage = async (req, res, next) => {
   try {
-    // const id  = getUserFromToken(req.headers.authorization);
     const { room_id } = req.query;
 
     const conversations = await Conversations.findAll({
@@ -93,3 +125,4 @@ const showMessage = async (req, res, next) => {
 };
 
 module.exports = { sendMessage, showMessage };
+
