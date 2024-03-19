@@ -16,6 +16,11 @@ module.exports = (sequelize, DataTypes) => {
         sourceKey: "id", // Ini mengacu ke kolom id di table Users
         as: "user_detail"
       });
+      Users.belongsToMany(models.Rooms,{
+        through: models.Conversations,
+        foreignKey: "user_id",
+        as: "rooms"
+      })
     }
   }
   Users.init(
@@ -25,16 +30,16 @@ module.exports = (sequelize, DataTypes) => {
       email: {
         type: DataTypes.STRING,
         unique: true,
-        allowNull: false
+        allowNull: false,
       },
       password: {
         type: DataTypes.STRING,
-        allowNull: false
+        allowNull: false,
       },
       phone: {
         type: DataTypes.STRING,
         unique: true,
-        allowNull: false
+        allowNull: false,
       },
       created_at: {
         type: DataTypes.STRING,
@@ -42,12 +47,15 @@ module.exports = (sequelize, DataTypes) => {
       updated_at: {
         type: DataTypes.STRING,
       },
-      token_verify:{
-        type: DataTypes.STRING
+      token_verify: {
+        type: DataTypes.STRING,
       },
-      verify:{
-        type: DataTypes.BOOLEAN
-      }
+      verify: {
+        type: DataTypes.BOOLEAN,
+      },
+      is_admin: {
+        type: DataTypes.BOOLEAN,
+      },
     },
     {
       sequelize,
@@ -57,7 +65,6 @@ module.exports = (sequelize, DataTypes) => {
         beforeCreate: (user, options) => {
           user.created_at = getFormattedDate();
           user.updated_at = getFormattedDate();
-          
         },
         beforeUpdate: (user, options) => {
           user.updated_at = getFormattedDate();
