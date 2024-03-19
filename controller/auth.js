@@ -112,6 +112,33 @@ async function login(req, res, next) {
     }
 }
 
+async function updateAdmin(req, res, next) {
+    try {
+        const user_id = req.user.id;
+        const updateAdmin = await Users.findOne({ where: user_id });
+
+        if (!updateAdmin) {
+            return res.status(404).json(new ErrorResponse("ID is not found!", 404));
+        } else if (updateAdmin.is_admin == true) {
+            return res.status(200).json(
+                new SuccessResponse("ID is already an admin.", 200, {
+                    is_admin: updateAdmin.is_admin,
+                })
+            );
+        } else {
+            updateAdmin.is_admin = true;
+            await updateAdmin.save();
+            return res.status(200).json(
+                new SuccessResponse("ID is now an admin.", 200, {
+                    is_admin: updateAdmin.is_admin,
+                })
+            );
+        }
+    } catch (error) {
+        next(error);
+    }
+}
+
 async function verifyEmail(req, res, next) {
     try {
         const { token } = req.query;
@@ -138,4 +165,4 @@ async function verifyEmail(req, res, next) {
     }
 }
 
-module.exports = { register, login, verifyEmail };
+module.exports = { register, login, verifyEmail, updateAdmin };
