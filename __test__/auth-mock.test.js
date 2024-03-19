@@ -304,8 +304,6 @@ describe("Unit tests for endpoint handlers", () => {
         it("should return 404 Email Not Found!", async () => {
             const req = mockRequest({ email: "wrong_email", password: mockUser.password });
 
-            // jest.spyOn(bcrypt, "compare").mockResolvedValue(true);
-
             await login(req, res, next).then(() => {
                 expect(res.status).toHaveBeenCalledWith(404);
             });

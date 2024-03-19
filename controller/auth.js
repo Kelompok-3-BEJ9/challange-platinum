@@ -7,6 +7,7 @@ const { sendEmail } = require("../modules/sendinblue");
 const { randomToken } = require("../utils/uuid");
 const { formatEmail } = require("../utils/emailValidation");
 const { update } = require("./user");
+const { generateJwtToken } = require("../modules/jwt");
 
 //view verifyEmail
 const viewVerify = fs.readFileSync("view/email/verifyEmail.html", "utf8");
@@ -81,28 +82,26 @@ async function register(req, res, next) {
 }
 
 async function login(req, res, next) {
-  try {
-    const { email, password } = req.body;
+    try {
+        const { email, password } = req.body;
+        //cekUser
+        const user = await Users.findOne({ where: { email } });
+        if (!user) {
+            const response = new ErrorResponse("Email Not Found!", 404);
+            return res.status(404).json(response);
+        } else if (user.verify === false) {
+            const response = new ErrorResponse("Please Verify Your Email!", 400);
+            return res.status(400).json(response);
+        }
+        // Cek Password
+        const cekPassword = await bcrypt.compare(password, user.password);
+        if (cekPassword) {
+            //create Token Jwt
+            const token = generateJwtToken(user);
 
-    //cekUser
-    const user = await Users.findOne({ where: { email } });
-    if (!user) {
-      const response = new ErrorResponse("Email Not Found!", 404);
-      return res.status(404).json(response);
-    } else if (user.verify === false) {
-      const response = new ErrorResponse("Please Verify Your Email!", 400);
-      return res.status(400).json(response);
-    }
-
-    // Cek Password
-    const cekPassword = await bcrypt.compare(password, user.password);
-    if (cekPassword) {
-      //create Token Jwt
-      const token = generateJwtToken(user);
-
-      const response = new SuccessResponse("Login Succcess! 👏", 200, {
-        token: token,
-      });
+            const response = new SuccessResponse("Login Succcess! 👏", 200, {
+                token: token,
+            });
 
             return res.status(200).json(response);
         } else {

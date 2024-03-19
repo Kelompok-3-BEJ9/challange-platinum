@@ -1,5 +1,6 @@
 const { SuccessResponse, ErrorResponse } = require("../utils/respons");
 const { Items } = require("../models");
+const { uploadCloudinary } = require("../modules/cloudinary");
 
 async function createItem(req, res, next) {
     try {
@@ -18,22 +19,18 @@ async function createItem(req, res, next) {
             return res.status(400).json(response);
         }
 
-    const createdItems = await Items.create({
-      item_name,
-      item_price,
-      item_image: uploadImage,
-      item_stock,
-      item_description,
-    });
-    const response = new SuccessResponse(
-      "CREATE ITEM SUCCESS!",
-      201,
-      createdItems
-    );
-    return res.status(201).json(response)
-  } catch (error) {
-    next(error);
-  }
+        const createdItems = await Items.create({
+            item_name,
+            item_price,
+            item_image: uploadImage,
+            item_stock,
+            item_description,
+        });
+        const response = new SuccessResponse("CREATE ITEM SUCCESS!", 201, createdItems);
+        return res.status(201).json(response);
+    } catch (error) {
+        next(error);
+    }
 }
 
 async function updateItem(req, res, next) {
