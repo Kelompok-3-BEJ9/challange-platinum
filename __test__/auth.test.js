@@ -49,7 +49,6 @@ describe("Router Test", () => {
                     postal_code: "1234",
                     country_code: "idn",
                 });
-                console.log(response.body);
                 expect(response.statusCode).toBe(200);
             });
             test("Email Already In System", async () => {
@@ -74,7 +73,7 @@ describe("Router Test", () => {
                     },
                 });
                 const response = await request(app).get(`/verify/v1?token=${user.token_verify}`);
-                console.log(response.body);
+
                 expect(response.statusCode).toBe(200);
                 expect(response.body.message).toEqual("Email Veerified 🎉🎉🎉");
             });
