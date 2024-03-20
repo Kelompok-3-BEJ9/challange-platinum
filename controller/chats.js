@@ -15,7 +15,7 @@ const sendMessage = (io, socket) => async (message) => {
   });
   const to_user_id = socket.handshake.query.to_user_id || admin.id;
 
-  // Periksa to_user_id 
+  //// Periksa apakah to_user_id ada dalam database
   const recipient = await Users.findOne({
     where: {
       id: to_user_id,
@@ -50,7 +50,7 @@ const sendMessage = (io, socket) => async (message) => {
       { room_id: newRoom.id, user_id: to_user_id }
     ]);
 
-    // Percakapan Baru 
+    // Percakapan Baru , otomatis akan dikirimkan chat welcome to the chat
     const welcomeMessage = `Welcome to the chat, ${user.name}!`;
     const newConversation = await Conversations.findOne({
       where: {
@@ -125,4 +125,3 @@ const showMessage = async (req, res, next) => {
 };
 
 module.exports = { sendMessage, showMessage };
-
