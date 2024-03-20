@@ -3,7 +3,6 @@ const app = require("../app");
 const { sequelize, Items, Order, Order_items } = require("../models");
 const { generateJwtToken } = require("../modules/jwt");
 const { createOrder, orderSuccess, getOrderDetails } = require("../controller/order");
-const { SuccessResponse } = require("../utils/respons");
 
 //**MOCKING */
 const mockUser = {

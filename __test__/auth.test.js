@@ -1,6 +1,6 @@
 const request = require("supertest");
 const app = require("../app");
-const { sequelize, Users, User_Details } = require("../models");
+const { Users } = require("../models");
 
 describe("Router Test", () => {
     describe("Auth Router Tests", () => {
