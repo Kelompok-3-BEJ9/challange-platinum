@@ -1,8 +1,8 @@
 const request = require("supertest");
 const app = require("../app");
 const bcrypt = require("bcrypt");
-const { sequelize, Users, User_Details } = require("../models");
-const { register, login, verifyEmail } = require("../controller/auth");
+const { Users } = require("../models");
+const { register, login } = require("../controller/auth");
 
 //**MOCKING */
 const mockUserId = 1;
