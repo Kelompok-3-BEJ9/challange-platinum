@@ -4,15 +4,30 @@ const { uploadCloudinary } = require("../modules/cloudinary");
 
 async function createItem(req, res, next) {
   try {
+    // console.log(req);
     const { item_name, item_price, item_description, item_stock } = req.body;
 
     // Pemeriksaan apakah req.file tidak undefined
-    if (!req.file) {
+    if (!req.files) {
       const response = new ErrorResponse("Please Upload Item Image", 400);
       return res.status(400).json(response);
     }
     //upload image dengan cloudinary
-    const uploadImage = await uploadCloudinary(req.file.path);
+    // const uploadImage = await uploadCloudinary(req.file.path);
+    let result = [];
+
+    // transaction begin
+    // Iterasi yang berurusan dengan upload
+    for (let i = 0; i < req.files.length; i++) {
+      try {
+        let uploadResult = await uploadCloudinary(req.files[i].path);
+        console.log(uploadResult);
+        result.push(uploadResult);
+      } catch (error) {
+        console.error("Error uploading file:", error);
+        return res.status(500).json({ message: "Internal Server Error" });
+      }
+    }
 
     if (!item_name || !item_price) {
       const response = new ErrorResponse("Input Name and Price 🙏", 400);
@@ -22,7 +37,7 @@ async function createItem(req, res, next) {
     const createdItems = await Items.create({
       item_name,
       item_price,
-      item_image: uploadImage,
+      item_image: result,
       item_stock,
       item_description,
     });
@@ -33,13 +48,14 @@ async function createItem(req, res, next) {
     );
     return res.status(201).json(response);
   } catch (error) {
+    console.log(error);
     next(error);
   }
 }
 
 async function updateItem(req, res, next) {
   try {
-    const id  = +req.params.id;
+    const id = +req.params.id;
     const {
       item_name,
       item_price,
@@ -77,14 +93,14 @@ async function updateItem(req, res, next) {
 
 async function getItem(req, res, next) {
   try {
-    const id  = +req.params.id;
+    const id = +req.params.id;
     const item = await Items.findOne({
       where: {
         id,
       },
     });
     if (!item) {
-      const response = new ErrorResponse("DATA NOT FOUND!",404)
+      const response = new ErrorResponse("DATA NOT FOUND!", 404);
       return res.status(404).json(response);
     }
     const response = new SuccessResponse("Get Item Success", 200, item);
@@ -97,7 +113,8 @@ async function getItem(req, res, next) {
 async function getAllItem(req, res, next) {
   try {
     const data = await Items.findAll();
-    const response = new SuccessResponse("Get item all success", 200, data)
+    const response = new SuccessResponse("Get item all success", 200, data);
+    // console.log(data);
     return res.status(200).json(response);
   } catch (error) {
     next(error);
@@ -110,7 +127,10 @@ async function deleteItem(req, res, next) {
     const item = await Items.findByPk(id);
 
     if (!item) {
-      const response = new ErrorResponse("ITEM NOT FOUND or ALREADY DELETED.", 404);
+      const response = new ErrorResponse(
+        "ITEM NOT FOUND or ALREADY DELETED.",
+        404
+      );
       return res.status(404).json(response);
     }
 
