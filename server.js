@@ -11,7 +11,7 @@ io.on("connection", (socket) => {
     chatsRouter(io, socket);
 });
 
-//function server
+//test deploy
 async function startServer() {
     try {
         await sequelize.authenticate();
