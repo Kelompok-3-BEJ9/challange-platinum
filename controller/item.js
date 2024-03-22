@@ -4,31 +4,46 @@ const { uploadCloudinary } = require("../modules/cloudinary");
 
 async function createItem(req, res, next) {
     try {
+        // console.log(req);
         const { item_name, item_price, item_description, item_stock } = req.body;
+
         // Pemeriksaan apakah req.file tidak undefined
-        if (!req.file) {
+        if (!req.files || req.files.length === 0) {
             const response = new ErrorResponse("Please Upload Item Image", 400);
             return res.status(400).json(response);
         }
-
-        //upload image dengan cloudinary
-        const uploadImage = await uploadCloudinary(req.file.path);
 
         if (!item_name || !item_price) {
             const response = new ErrorResponse("Input Name and Price 🙏", 400);
             return res.status(400).json(response);
         }
+        //upload image dengan cloudinary
+        // const uploadImage = await uploadCloudinary(req.file.path);
+        let result = [];
+
+        // transaction begin
+        // Iterasi yang berurusan dengan upload
+        for (let i = 0; i < req.files.length; i++) {
+            try {
+                let uploadResult = await uploadCloudinary(req.files[i].path);
+                result.push(uploadResult);
+            } catch (error) {
+                console.error("Error uploading file:", error);
+                return res.status(500).json({ message: "Internal Server Error" });
+            }
+        }
 
         const createdItems = await Items.create({
             item_name,
             item_price,
-            item_image: uploadImage,
+            item_image: result,
             item_stock,
             item_description,
         });
         const response = new SuccessResponse("CREATE ITEM SUCCESS!", 201, createdItems);
         return res.status(201).json(response);
     } catch (error) {
+        console.log(error);
         next(error);
     }
 }
@@ -94,6 +109,7 @@ async function getAllItem(req, res, next) {
     try {
         const data = await Items.findAll();
         const response = new SuccessResponse("Get item all success", 200, data);
+        // console.log(data);
         return res.status(200).json(response);
     } catch (error) {
         next(error);

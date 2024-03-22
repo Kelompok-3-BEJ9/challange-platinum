@@ -1,8 +1,8 @@
 const request = require("supertest");
 const app = require("../app");
 const bcrypt = require("bcrypt");
-const { sequelize, Users, User_Details } = require("../models");
-const { register, login, verifyEmail } = require("../controller/auth");
+const { Users } = require("../models");
+const { register, login } = require("../controller/auth");
 
 //**MOCKING */
 const mockUserId = 1;
@@ -303,8 +303,6 @@ describe("Unit tests for endpoint handlers", () => {
 
         it("should return 404 Email Not Found!", async () => {
             const req = mockRequest({ email: "wrong_email", password: mockUser.password });
-
-            // jest.spyOn(bcrypt, "compare").mockResolvedValue(true);
 
             await login(req, res, next).then(() => {
                 expect(res.status).toHaveBeenCalledWith(404);

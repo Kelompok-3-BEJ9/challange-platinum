@@ -1,12 +1,14 @@
+require("dotenv").config();
+
 const { Users, User_Details } = require("../models");
 const fs = require("fs");
 const bcrypt = require("bcrypt");
 
 const { SuccessResponse, ErrorResponse } = require("../utils/respons");
-const { generateJwtToken } = require("../modules/jwt");
-const { sendEmail } = require("../modules/sendinblue");
+const { sendEmail } = require("../modules/nodemailer");
 const { randomToken } = require("../utils/uuid");
 const { formatEmail } = require("../utils/emailValidation");
+const { generateJwtToken } = require("../modules/jwt");
 
 //view verifyEmail
 const viewVerify = fs.readFileSync("view/email/verifyEmail.html", "utf8");
@@ -24,6 +26,7 @@ async function register(req, res, next) {
             postal_code,
             country_code,
         } = req.body;
+
         if (!email || !password) {
             return res.status(400).json(new ErrorResponse("Input Email & Password", 400));
         }
@@ -58,16 +61,13 @@ async function register(req, res, next) {
         });
 
         //link verification
-        const verificationLink = `http://localhost:1990/verify/v1?token=${user.token_verify}`;
+        const verificationLink = `${process.env.URL_SERVER}/verify/v1?token=${user.token_verify}`;
 
         //view verifikasi to email
         const htmlContent = viewVerify.replace("{{verificationLink}}", verificationLink);
 
         //send email
-        await sendEmail(email, {
-            subject: "Verification Link ✔︎",
-            htmlContent: htmlContent,
-        });
+        sendEmail(email, htmlContent);
 
         return res.status(200).json(
             new SuccessResponse("Cek Your Email For Verify!!", 200, {
@@ -94,10 +94,10 @@ async function login(req, res, next) {
         }
         // Cek Password
         const cekPassword = await bcrypt.compare(password, user.password);
-
         if (cekPassword) {
             //create Token Jwt
             const token = generateJwtToken(user);
+
             const response = new SuccessResponse("Login Succcess! 👏", 200, {
                 token: token,
             });
@@ -106,6 +106,33 @@ async function login(req, res, next) {
         } else {
             const response = new ErrorResponse("Incorrect Password! 👎", 401);
             return res.status(401).json(response);
+        }
+    } catch (error) {
+        next(error);
+    }
+}
+
+async function updateAdmin(req, res, next) {
+    try {
+        const user_id = req.user.id;
+        const updateAdmin = await Users.findOne({ where: user_id });
+
+        if (!updateAdmin) {
+            return res.status(404).json(new ErrorResponse("ID is not found!", 404));
+        } else if (updateAdmin.is_admin == true) {
+            return res.status(200).json(
+                new SuccessResponse("ID is already an admin.", 200, {
+                    is_admin: updateAdmin.is_admin,
+                })
+            );
+        } else {
+            updateAdmin.is_admin = true;
+            await updateAdmin.save();
+            return res.status(200).json(
+                new SuccessResponse("ID is now an admin.", 200, {
+                    is_admin: updateAdmin.is_admin,
+                })
+            );
         }
     } catch (error) {
         next(error);
@@ -138,4 +165,4 @@ async function verifyEmail(req, res, next) {
     }
 }
 
-module.exports = { register, login, verifyEmail };
+module.exports = { register, login, verifyEmail, updateAdmin };
