@@ -5,10 +5,10 @@
     "main": "server.js",
     "scripts": {
         "start": "nodemon server",
-        "test": "jest",
+        "test": "jest --detectOpenHandles --forceExit --runInBand",
         "test-auth-mock": "jest auth-mock.test.js",
         "test-auth": "jest auth.test.js",
-        "test-item": "jest item.test.js",
+        "test-item": "jest item.test.js --forceExit",
         "test-order": "jest order.test.js",
         "test-order-mock": "jest order-mock.test.js",
         "swagger": "node swagger.js",
