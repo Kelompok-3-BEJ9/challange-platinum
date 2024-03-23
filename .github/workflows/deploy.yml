@@ -21,7 +21,5 @@ jobs:
                   port: 22
                   script: |
                       cd /home/berylmalikaveta/challange-platinum
-                      git pull origin master
-                      git status
-                      npm install
+                      git pull
                       pm2 restart all
