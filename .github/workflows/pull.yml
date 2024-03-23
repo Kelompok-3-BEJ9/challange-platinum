@@ -1,27 +1,26 @@
-name: Deploy Test GCP
+name: Pull Changes from Master Branch
 
 on:
     push:
         branches:
-            - "master"
+            - master
 
 jobs:
-    build:
+    pull_changes:
         runs-on: ubuntu-latest
-        steps:
-            - name: Checkout
-              uses: actions/checkout@master
 
-            - name: Deploy to Server
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v2
+
+            - name: Pull changes on the server
               uses: appleboy/ssh-action@master
               with:
                   host: 34.125.175.246
-                  username: berylmalikaveta
+                  username: beylmalikaveta
                   key: ${{ secrets.PRIVATE_KEY }}
                   port: 22
                   script: |
                       cd /home/berylmalikaveta/challange-platinum
                       git pull origin master
-                      git status
-                      npm install
                       pm2 restart all
