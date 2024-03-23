@@ -20,5 +20,6 @@ jobs:
                   key: ${{ secrets.SSHKEY }}
                   script: |
                       cd /home/berylmalikaveta/challange-platinum
-                      git fetch origin
+                      git fetch origin master
+                      git pull origin master
                       pm2 restart all

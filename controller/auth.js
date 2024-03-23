@@ -10,7 +10,7 @@ const { randomToken } = require("../utils/uuid");
 const { formatEmail } = require("../utils/emailValidation");
 const { generateJwtToken } = require("../modules/jwt");
 
-
+//chores: test deploy
 //view verifyEmail
 const viewVerify = fs.readFileSync("view/email/verifyEmail.html", "utf8");
 
