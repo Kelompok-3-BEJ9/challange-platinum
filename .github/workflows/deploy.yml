@@ -22,5 +22,13 @@ jobs:
                   script: |
                       cd /home/berylmalikaveta/challange-platinum
                       git fetch --all
-                      git reset --hard
-                      pm2 restart all
+                      git merge --no-commit --no-ff origin/master  # Merge changes without committing
+                      git status  # Check for conflicts
+                      if [ -n "$(git status --porcelain)" ]; then  # Check if there are conflicts
+                        git merge --abort  # Abort merge if conflicts exist
+                        echo "Conflicts detected, please resolve them manually"
+                      else
+                        git commit -m "Merge changes from origin/master"
+                        git pull origin master
+                        pm2 restart all
+                      fi
