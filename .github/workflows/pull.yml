@@ -22,5 +22,6 @@ jobs:
                   port: 22
                   script: |
                       cd /home/berylmalikaveta/challange-platinum
+                      git fetch --all
                       git pull origin master
                       pm2 restart all
