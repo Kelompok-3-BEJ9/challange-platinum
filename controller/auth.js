@@ -12,6 +12,7 @@ const { generateJwtToken } = require("../modules/jwt");
 
 //chore: deploy
 //chore: deploy 2
+//chore: deploy 3
 //view verifyEmail
 const viewVerify = fs.readFileSync("view/email/verifyEmail.html", "utf8");
 
