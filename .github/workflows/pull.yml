@@ -19,6 +19,7 @@ jobs:
                   host: 34.125.175.246
                   username: berylmalikaveta
                   key: ${{ secrets.PRIVATE_KEY }}
+                  ssh-options: "-A"
                   port: 22
                   script: |
                       cd /home/berylmalikaveta/challange-platinum
