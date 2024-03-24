@@ -10,7 +10,6 @@ const { randomToken } = require("../utils/uuid");
 const { formatEmail } = require("../utils/emailValidation");
 const { generateJwtToken } = require("../modules/jwt");
 
-//chore: deploy fix!
 //view verifyEmail
 const viewVerify = fs.readFileSync("view/email/verifyEmail.html", "utf8");
 
@@ -101,6 +100,7 @@ async function login(req, res, next) {
 
             const response = new SuccessResponse("Login Succcess! 👏", 200, {
                 token: token,
+                id: user.id,
             });
 
             return res.status(200).json(response);

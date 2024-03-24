@@ -5,7 +5,7 @@
     "main": "server.js",
     "scripts": {
         "start": "nodemon server",
-        "test": "jest --detectOpenHandles --forceExit --runInBand",
+        "test": "jest --no-chache --forceExit --coverage",
         "test-auth-mock": "jest auth-mock.test.js",
         "test-auth": "jest auth.test.js",
         "test-item": "jest item.test.js --forceExit",
