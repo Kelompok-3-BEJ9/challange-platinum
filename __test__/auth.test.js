@@ -77,6 +77,10 @@ describe("Router Test", () => {
                 expect(response.statusCode).toBe(200);
                 expect(response.body.message).toEqual("Email Veerified 🎉🎉🎉");
             });
+            // test.only("Internal Server Error 500", async () => {
+            //     const response = await request(app).post("/register/v1");
+            //     expect(response.statusCode).toBe(500);
+            // });
         });
         describe("Login Route Test", () => {
             test("Email Not Found", async () => {

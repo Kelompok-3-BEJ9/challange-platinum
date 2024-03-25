@@ -189,7 +189,9 @@
 <a name='L124'></a><a href='#L124'>124</a>
 <a name='L125'></a><a href='#L125'>125</a>
 <a name='L126'></a><a href='#L126'>126</a>
-<a name='L127'></a><a href='#L127'>127</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">4x</span>
+<a name='L127'></a><a href='#L127'>127</a>
+<a name='L128'></a><a href='#L128'>128</a>
+<a name='L129'></a><a href='#L129'>129</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">4x</span>
 <span class="cline-any cline-yes">4x</span>
 <span class="cline-any cline-yes">4x</span>
 <span class="cline-any cline-yes">4x</span>
@@ -199,6 +201,7 @@
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -315,140 +318,143 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">4x</span></td><td class="text"><pre class="prettyprint lang-js">const { getUserFromToken } = require("../middleware/verifyAccess");
+<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">const { getUserFromToken } = require("../middleware/verifyAccess");
 const { Op } = require("sequelize");
 const { sequelize } = require("../models");
 const { Rooms, Conversations, Messages, Users } = require("../models");
 const { SuccessResponse } = require("../utils/respons");
 &nbsp;
 const sendMessage = <span class="fstat-no" title="function not covered" >(i</span>o, socket) =&gt; <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >as</span>ync (message) =&gt; {</span>
-  const user = <span class="cstat-no" title="statement not covered" >getUserFromToken(socket.handshake.headers.authorization);</span>
-  const text = <span class="cstat-no" title="statement not covered" >message;</span>
-  
-  const admin = <span class="cstat-no" title="statement not covered" >await Users.findOne({</span>
-    where: {
-      is_admin: true,
-    },
-  });
-  const to_user_id = <span class="cstat-no" title="statement not covered" >socket.handshake.query.to_user_id || admin.id;</span>
+    const user = <span class="cstat-no" title="statement not covered" >getUserFromToken(socket.handshake.headers.authorization);</span>
+    const text = <span class="cstat-no" title="statement not covered" >message;</span>
 &nbsp;
-  //// Periksa apakah to_user_id ada dalam database
-  const recipient = <span class="cstat-no" title="statement not covered" >await Users.findOne({</span>
-    where: {
-      id: to_user_id,
-    },
-  });
+    //Handshake salah satu nya harus admin = true
+    const admin = <span class="cstat-no" title="statement not covered" >await Users.findOne({</span>
+        where: {
+            is_admin: true,
+        },
+    });
+    const to_user_id = <span class="cstat-no" title="statement not covered" >socket.handshake.query.to_user_id || admin.id;</span>
 &nbsp;
-<span class="cstat-no" title="statement not covered" >  if (!recipient) {</span>
-<span class="cstat-no" title="statement not covered" >    socket.emit("errorMessage", "User not found");</span>
-<span class="cstat-no" title="statement not covered" >    return;</span>
-  }
+    // Periksa apakah to_user_id ada dalam database
+    const recipient = <span class="cstat-no" title="statement not covered" >await Users.findOne({</span>
+        where: {
+            id: to_user_id,
+        },
+    });
 &nbsp;
-  let room = <span class="cstat-no" title="statement not covered" >await sequelize.query(</span>
-    `SELECT c.room_id FROM "Conversations" c 
+<span class="cstat-no" title="statement not covered" >    if (!recipient) {</span>
+<span class="cstat-no" title="statement not covered" >        socket.emit("errorMessage", "User not found");</span>
+<span class="cstat-no" title="statement not covered" >        return;</span>
+    }
+&nbsp;
+    let room = <span class="cstat-no" title="statement not covered" >await sequelize.query(</span>
+        `SELECT c.room_id FROM "Conversations" c 
         WHERE c.user_id = :myuserid OR c.user_id = :otheruser
         GROUP BY c.room_id 
         HAVING COUNT(c.room_id) = 2 `,
-    {
-      replacements: { myuserid: user.id, otheruser: to_user_id },
-      type: sequelize.QueryTypes.SELECT,
+        {
+            replacements: { myuserid: user.id, otheruser: to_user_id },
+            type: sequelize.QueryTypes.SELECT,
+        }
+    );
+&nbsp;
+    let roomId = <span class="cstat-no" title="statement not covered" >room.length &gt; 0 ? room[0].room_id : null;</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    if (!roomId) {</span>
+        const newRoom = <span class="cstat-no" title="statement not covered" >await Rooms.create();</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >        roomId = newRoom.id;</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >        await Conversations.bulkCreate([</span>
+            { room_id: newRoom.id, user_id: user.id },
+            { room_id: newRoom.id, user_id: to_user_id },
+        ]);
+&nbsp;
+        // Percakapan Baru , otomatis akan dikirimkan chat welcome to the chat
+        const welcomeMessage = <span class="cstat-no" title="statement not covered" >`Welcome to the chat, ${user.name}!`;</span>
+        const newConversation = <span class="cstat-no" title="statement not covered" >await Conversations.findOne({</span>
+            where: {
+                room_id: roomId,
+                user_id: user.id, // user penerima pesan selamat datang
+            },
+            attributes: ["id"],
+        });
+&nbsp;
+<span class="cstat-no" title="statement not covered" >        if (newConversation) {</span>
+<span class="cstat-no" title="statement not covered" >            await Messages.create({</span>
+                conversation_id: newConversation.id,
+                user_id: admin.id, // Kirim dari admin
+                message: welcomeMessage,
+            });
+&nbsp;
+<span class="cstat-no" title="statement not covered" >            socket.join(roomId);</span>
+<span class="cstat-no" title="statement not covered" >            io.to(roomId).emit("receiveMessage", welcomeMessage);</span>
+        }
     }
-  );
 &nbsp;
-  let roomId = <span class="cstat-no" title="statement not covered" >room.length &gt; 0 ? room[0].room_id : null;</span>
-&nbsp;
-<span class="cstat-no" title="statement not covered" >  if (!roomId) {</span>
-    const newRoom = <span class="cstat-no" title="statement not covered" >await Rooms.create();</span>
-&nbsp;
-<span class="cstat-no" title="statement not covered" >    roomId = newRoom.id;</span>
-&nbsp;
-<span class="cstat-no" title="statement not covered" >    await Conversations.bulkCreate([</span>
-      { room_id: newRoom.id, user_id: user.id },
-      { room_id: newRoom.id, user_id: to_user_id }
-    ]);
-&nbsp;
-    // Percakapan Baru , otomatis akan dikirimkan chat welcome to the chat
-    const welcomeMessage = <span class="cstat-no" title="statement not covered" >`Welcome to the chat, ${user.name}!`;</span>
-    const newConversation = <span class="cstat-no" title="statement not covered" >await Conversations.findOne({</span>
-      where: {
-        room_id: roomId,
-        user_id: user.id, // user penerima pesan selamat datang
-      },
-      attributes: ["id"],
+    const conversation = <span class="cstat-no" title="statement not covered" >await Conversations.findOne({</span>
+        where: {
+            room_id: roomId,
+            user_id: user.id,
+        },
+        attributes: ["id"],
     });
 &nbsp;
-<span class="cstat-no" title="statement not covered" >    if (newConversation) {</span>
-<span class="cstat-no" title="statement not covered" >      await Messages.create({</span>
-        conversation_id: newConversation.id,
-        user_id: admin.id, // Kirim dari admin
-        message: welcomeMessage,
-      });
+<span class="cstat-no" title="statement not covered" >    if (conversation) {</span>
+<span class="cstat-no" title="statement not covered" >        await Messages.create({</span>
+            conversation_id: conversation.id,
+            user_id: user.id,
+            message: text,
+        });
 &nbsp;
-<span class="cstat-no" title="statement not covered" >      socket.join(roomId);</span>
-<span class="cstat-no" title="statement not covered" >      io.to(roomId).emit("receiveMessage", welcomeMessage);</span>
+<span class="cstat-no" title="statement not covered" >        socket.join(roomId);</span>
+<span class="cstat-no" title="statement not covered" >        io.to(roomId).emit("receiveMessage", text);</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >        socket.on("disconnect", <span class="fstat-no" title="function not covered" >as</span>ync () =&gt; {</span>
+<span class="cstat-no" title="statement not covered" >            io.to(roomId).emit("leftRoom", `${user.name} left`);</span>
+        });
     }
-  }
-&nbsp;
-  const conversation = <span class="cstat-no" title="statement not covered" >await Conversations.findOne({</span>
-    where: {
-      room_id: roomId,
-      user_id: user.id,
-    },
-    attributes: ["id"],
-  });
-&nbsp;
-<span class="cstat-no" title="statement not covered" >  if (conversation) {</span>
-<span class="cstat-no" title="statement not covered" >    await Messages.create({</span>
-      conversation_id: conversation.id,
-      user_id: user.id,
-      message: text,
-    });
-&nbsp;
-<span class="cstat-no" title="statement not covered" >    socket.join(roomId);</span>
-<span class="cstat-no" title="statement not covered" >    io.to(roomId).emit("receiveMessage", text);</span>
-&nbsp;
-<span class="cstat-no" title="statement not covered" >    socket.on('disconnect', <span class="fstat-no" title="function not covered" >as</span>ync () =&gt; {</span>
-<span class="cstat-no" title="statement not covered" >      io.to(roomId).emit("leftRoom", `${user.name} left`);</span>
-    });
-  }
 };
 &nbsp;
 const showMessage = <span class="fstat-no" title="function not covered" >as</span>ync (req, res, next) =&gt; {
-<span class="cstat-no" title="statement not covered" >  try {</span>
-    const { room_id } = <span class="cstat-no" title="statement not covered" >req.query;</span>
+<span class="cstat-no" title="statement not covered" >    try {</span>
+        const { room_id } = <span class="cstat-no" title="statement not covered" >req.query;</span>
 &nbsp;
-    const conversations = <span class="cstat-no" title="statement not covered" >await Conversations.findAll({</span>
-      where: {
-        room_id,
-      },
-      attributes: ["id"],
-    });
+        const conversations = <span class="cstat-no" title="statement not covered" >await Conversations.findAll({</span>
+            where: {
+                room_id,
+            },
+            attributes: ["id"],
+        });
 &nbsp;
-    const conversationId = <span class="cstat-no" title="statement not covered" >conversations.map(<span class="fstat-no" title="function not covered" >(c</span>onv) =&gt; <span class="cstat-no" title="statement not covered" >conv.id)</span>;</span>
+        const conversationId = <span class="cstat-no" title="statement not covered" >conversations.map(<span class="fstat-no" title="function not covered" >(c</span>onv) =&gt; <span class="cstat-no" title="statement not covered" >conv.id)</span>;</span>
 &nbsp;
-    const messages = <span class="cstat-no" title="statement not covered" >await Messages.findAll({</span>
-      where: {
-        conversation_id: {
-          [Op.in]: conversationId,
-        },
-      },
-      attributes: ["message", "user_id", "id"],
-    });
+        const messages = <span class="cstat-no" title="statement not covered" >await Messages.findAll({</span>
+            where: {
+                conversation_id: {
+                    [Op.in]: conversationId,
+                },
+            },
+            attributes: ["message", "user_id", "id"],
+        });
 &nbsp;
-<span class="cstat-no" title="statement not covered" >    return res.status(200).json(new SuccessResponse("Success", 200, messages));</span>
-  } catch (error) {
-<span class="cstat-no" title="statement not covered" >    next(error);</span>
-  }
+<span class="cstat-no" title="statement not covered" >        return res.status(200).json(new SuccessResponse("Success", 200, messages));</span>
+    } catch (error) {
+<span class="cstat-no" title="statement not covered" >        next(error);</span>
+    }
 };
 &nbsp;
-module.exports = { sendMessage, showMessage };</pre></td></tr></table></pre>
+module.exports = { sendMessage, showMessage };
+&nbsp;</pre></td></tr></table></pre>
 
                 <div class='push'></div><!-- for sticky footer -->
             </div><!-- /wrapper -->
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2024-03-24T04:46:55.566Z
+                at 2024-03-25T06:02:28.258Z
             </div>
         <script src="../../prettify.js"></script>
         <script>

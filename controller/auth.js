@@ -10,6 +10,7 @@ const { randomToken } = require("../utils/uuid");
 const { formatEmail } = require("../utils/emailValidation");
 const { generateJwtToken } = require("../modules/jwt");
 
+//** TEST FILE ONLY TESTING THE REGISTER AND LOGIN FUNCTION */
 //view verifyEmail
 const viewVerify = fs.readFileSync("view/email/verifyEmail.html", "utf8");
 
@@ -113,6 +114,7 @@ async function login(req, res, next) {
     }
 }
 
+//** FROM HERE TO BELOW DOESN'T INCLUDED IN TEST FILE */
 async function updateAdmin(req, res, next) {
     try {
         const user_id = req.user.id;

@@ -6,7 +6,7 @@
     "scripts": {
         "start": "nodemon server",
         "test": "jest --no-chache --forceExit --coverage",
-        "test-auth-mock": "jest auth-mock.test.js",
+        "test-auth-mock": "jest auth-mock.test.js --detectOpenHandles",
         "test-auth": "jest auth.test.js",
         "test-item": "jest item.test.js --forceExit",
         "test-order": "jest order.test.js",

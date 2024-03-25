@@ -82,13 +82,13 @@ async function orderSuccess(req, res, next) {
         if (!updateOrder) {
             const response = new ErrorResponse("Order Not Found!", 404);
             return res.status(404).json(response);
-        } else {
-            updateOrder.status_order = "Success";
-
-            await updateOrder.save();
-            const response = new SuccessResponse("Order Update Success!", 200, updateOrder);
-            res.status(200).json(response);
         }
+
+        updateOrder.status_order = "Success";
+
+        await updateOrder.save();
+        const response = new SuccessResponse("Order Update Success!", 200, updateOrder);
+        res.status(200).json(response);
     } catch (error) {
         next(error);
     }

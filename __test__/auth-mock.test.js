@@ -1,10 +1,8 @@
 const request = require("supertest");
 const app = require("../app");
 const bcrypt = require("bcrypt");
-const { Users } = require("../models");
+const { Users, User_Details } = require("../models");
 const { register, login } = require("../controller/auth");
-
-//**MOCKING */
 const mockUserId = 1;
 const mockUser = {
     first_name: "Cek",
@@ -20,51 +18,48 @@ const mockUser = {
     verify: true,
 };
 
-const mockUserDetail = {
+const hashedPassword = "$2b$10$DqpjbKO.hA8IRcNKDBmPWOSisXNzn4Xte8MuXa7LpwNd/u9qIOi2S";
+const randomToken = "9f6fb21a-9d71-4b7d-92e7-fdef4abf744a";
+
+let mockCreateUser = {
+    first_name: mockUser.first_name,
+    last_name: mockUser.last_name,
+    email: mockUser.email,
+    phone: mockUser.phone,
+    password: hashedPassword,
+    token_verify: randomToken,
+};
+let mockUserDetail = {
     user_id: mockUserId,
     address: mockUser.address,
     city: mockUser.city,
     postal_code: mockUser.postal_code,
     country_code: mockUser.country_code,
 };
-const hashedPassword = "$2b$10$DqpjbKO.hA8IRcNKDBmPWOSisXNzn4Xte8MuXa7LpwNd/u9qIOi2S";
-const randomToken = "9f6fb21a-9d71-4b7d-92e7-fdef4abf744a";
-
 jest.mock("../models", () => {
     const SequelizeMock = require("sequelize-mock");
     const dbMock = new SequelizeMock();
     const UsersMock = dbMock.define("user", {});
     const User_DetailsMock = dbMock.define("user_detail", {});
 
-    UsersMock.findOne = jest.fn().mockResolvedValue(null);
-    UsersMock.create = jest.fn().mockResolvedValue({
-        toJSON: () => ({
-            first_name: mockUser.first_name,
-            last_name: mockUser.last_name,
-            email: mockUser.email,
-            phone: mockUser.phone,
-            password: hashedPassword,
-            token_verify: randomToken(),
-        }),
-    });
-
-    User_DetailsMock.create = jest.fn().mockResolvedValue({
-        toJSON: () => ({
-            user_id: mockUserId,
-            address: mockUser.address,
-            city: mockUser.city,
-            postal_code: mockUser.postal_code,
-            country_code: mockUser.country_code,
-        }),
-    });
-
     return { Users: UsersMock, User_Details: User_DetailsMock };
 });
+
+const mockError = new Error("Mock Internal Server Error");
 
 // **INTEGRATION TEST */
 describe("Integration test with mocking at endpoint register and login", () => {
     //**POST REGISTER */
+
     describe("POST /register/v1,", () => {
+        Users.findOne = jest.fn().mockResolvedValue(null);
+        Users.create = jest.fn().mockResolvedValue({
+            toJSON: () => mockCreateUser,
+        });
+
+        User_Details.create = jest.fn().mockResolvedValue({
+            toJSON: () => mockUserDetail,
+        });
         it("should create new user successfully", async () => {
             const response = await request(app).post("/register/v1").send(mockUser);
             expect(response.status).toBe(200);
@@ -125,6 +120,11 @@ describe("Integration test with mocking at endpoint register and login", () => {
             });
             mockUser.email = "cek@mail.com"; //changing back the mockUser for the next test
         });
+        it("should return 500 Internal Server Error", async () => {
+            Users.create = jest.fn().mockRejectedValueOnce(mockError);
+            const response = await request(app).post("/register/v1").send(mockUser);
+            expect(response.status).toBe(500);
+        });
     });
     //**POST LOGIN */
     describe("POST /login/v1,", () => {
@@ -180,7 +180,17 @@ describe("Integration test with mocking at endpoint register and login", () => {
                 data: null,
             });
         });
+
+        it("should return 500 Internal Server Error", async () => {
+            Users.findOne = jest.fn().mockRejectedValueOnce(mockError);
+            const response = await request(app)
+                .post("/login/v1")
+                .send({ email: mockUser.email, password: mockUser.password });
+            expect(response.status).toBe(500);
+        });
     });
+    Users.create.mockReset();
+    User_Details.create.mockReset();
 });
 
 // **MOCKING FOR UNIT TEST ONLY */
@@ -206,10 +216,27 @@ const next = jest.fn();
 //**UNIT TEST */
 describe("Unit tests for endpoint handlers", () => {
     describe("register()", () => {
+        Users.findOne = jest.fn().mockResolvedValue(null);
+        Users.create = jest.fn().mockResolvedValue({
+            toJSON: () => mockCreateUser,
+        });
+
+        User_Details.create = jest.fn().mockResolvedValue({
+            toJSON: () => mockUserDetail,
+        });
+
         const req = mockRequest(mockUser);
         const res = mockResponse();
 
         it("should create new user successfully", async () => {
+            Users.findOne = jest.fn().mockResolvedValue(null);
+            Users.create = jest.fn().mockResolvedValue({
+                toJSON: () => mockCreateUser,
+            });
+
+            User_Details.create = jest.fn().mockResolvedValue({
+                toJSON: () => mockUserDetail,
+            });
             await register(req, res, next).then(() => {
                 expect(res.status).toHaveBeenCalledWith(200);
                 expect(res.json).toHaveBeenCalledWith({

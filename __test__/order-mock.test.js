@@ -140,40 +140,41 @@ const mockOrderInstance = {
         };
     },
 };
+const mockError = new Error("Mock Internal Server Error");
 
-const responseOrder = {
-    id: 1,
-    item_name: "item-1",
-    item_price: 50,
-    item_image: "image1.jpg",
-    item_stock: 10,
-    item_description: "item1-desc",
-    quantity: null,
-    total_amount: null,
-    total_order_price: null,
-    addItems: jest.fn().mockImplementation(async function () {
-        (this.quantity = 2),
-            (this.total_amount = this.item_price * this.quantity),
-            (this.total_order_price = this.total_amount * 1);
-        return this;
-    }),
-    toJSON: function () {
-        return {
-            user_id: 1,
-            status_order: "Pending",
-            total_order_price: this.total_order_price,
-            items: {
-                item_name: this.item_name,
-                item_price: this.item_name,
-                item_image: this.item_name,
-                order_items: {
-                    quantity: this.quantity,
-                    total_amount: this.total_amount,
-                },
-            },
-        };
-    },
-};
+// const responseOrder = {
+//     id: 1,
+//     item_name: "item-1",
+//     item_price: 50,
+//     item_image: "image1.jpg",
+//     item_stock: 10,
+//     item_description: "item1-desc",
+//     quantity: null,
+//     total_amount: null,
+//     total_order_price: null,
+//     addItems: jest.fn().mockImplementation(async function () {
+//         (this.quantity = 2),
+//             (this.total_amount = this.item_price * this.quantity),
+//             (this.total_order_price = this.total_amount * 1);
+//         return this;
+//     }),
+//     toJSON: function () {
+//         return {
+//             user_id: 1,
+//             status_order: "Pending",
+//             total_order_price: this.total_order_price,
+//             items: {
+//                 item_name: this.item_name,
+//                 item_price: this.item_name,
+//                 item_image: this.item_name,
+//                 order_items: {
+//                     quantity: this.quantity,
+//                     total_amount: this.total_amount,
+//                 },
+//             },
+//         };
+//     },
+// };
 
 //**INTEGRATION TEST */
 describe("Integration test with mocking at order's router", () => {
@@ -248,6 +249,16 @@ describe("Integration test with mocking at order's router", () => {
 
             expect(response.status).toBe(401);
         });
+
+        it("should return 500 Internal Server Error", async () => {
+            Items.findByPk = jest.fn().mockRejectedValueOnce(mockError);
+
+            const response = await request(app)
+                .post("/order/v1")
+                .set("Authorization", `Bearer ${mockToken}`)
+                .send({ item_id: 3, quantity: 2 });
+            expect(response.status).toBe(500);
+        });
     });
 
     //**PUT METHOD */
@@ -291,6 +302,15 @@ describe("Integration test with mocking at order's router", () => {
             expect(response.status).toBe(401);
             expect(response).toHaveProperty("status");
         });
+
+        it("should return 500 Internal Server Error", async () => {
+            Order.findOne = jest.fn().mockRejectedValueOnce(mockError);
+            const response = await request(app)
+                .put("/update/order/v1")
+                .set("Authorization", `Bearer ${mockToken}`);
+
+            expect(response.status).toBe(500);
+        });
     });
 
     //**GET METHOD */
@@ -313,7 +333,7 @@ describe("Integration test with mocking at order's router", () => {
         });
 
         it("should return 404 if order not found", async () => {
-            Order.findByPk = jest.fn().mockResolvedValue(null);
+            Order.findByPk = jest.fn().mockResolvedValueOnce(null);
             const response = await request(app)
                 .get(`/get/order/v1?order_id=${order_id}`)
                 .set("Authorization", `Bearer ${mockToken}`);
@@ -331,6 +351,14 @@ describe("Integration test with mocking at order's router", () => {
 
             expect(response.status).toBe(401);
             expect(response).toHaveProperty("status");
+        });
+        it("should return 500 Internal Server Error", async () => {
+            Order.findByPk = jest.fn().mockRejectedValueOnce(mockError);
+            const response = await request(app)
+                .get(`/get/order/v1?order_id=${order_id}`)
+                .set("Authorization", `Bearer ${mockToken}`);
+            console.log(response.body);
+            expect(response.status).toBe(500);
         });
     });
 });
