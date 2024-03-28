@@ -117,7 +117,6 @@ async function deleted(req, res, next) {
             const response = new ErrorResponse("USER NOT FOUND or ALREADY DELETED.", 404);
             return res.status(404).json(response);
         }
-        0;
         await Users.destroy({
             where: {
                 id,
